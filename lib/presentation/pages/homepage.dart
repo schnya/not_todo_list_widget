@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:not_todo_list_widget/presentation/widgets/form.dart';
-import 'package:not_todo_list_widget/utils/shared_preferences.dart';
+
+import '../../utils/shared_preferences.dart';
+import '../widgets/form.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
