@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:not_todo_list_widget/presentation/widgets/lists.dart';
@@ -27,19 +26,21 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
   final node = FocusNode();
   int? index;
 
-  void openDrawer() => scaffold.currentState?.openDrawer();
-
   Future<void> save() async {
     final prefs = await preferences;
     final text = formKey.currentState?.bodyContoller.text;
     if (text is! String || text.isEmpty) return;
 
     if (widget.id == null) {
-      await prefs.setInt('length', index!);
-      ref.read(numOfTodosStateProvider.state).state = index!;
+      // 新規作成
+      await prefs.setInt('length', index! + 1);
+      ref.read(numOfTodosStateProvider.state).state = index! + 1;
     }
     await prefs.setString('todo_$index', text);
     print('saved');
+
+    node.unfocus();
+    setState(() {});
   }
 
   @override
@@ -50,10 +51,12 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
       index = widget.id;
     } else {
       setState(() {
-        preferences.then((prefs) => index = (prefs.getInt('length') ?? 0) + 1);
+        preferences
+            .then((prefs) => index = prefs.getInt('length') ?? 0)
+            .whenComplete(() => print(index));
       });
+      node.requestFocus();
     }
-    node.requestFocus();
   }
 
   @override
@@ -67,7 +70,18 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
     return Scaffold(
       key: scaffold,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            onPressed: () {
+              final text = formKey.currentState?.bodyContoller.text;
+              if (text is! String || text.isEmpty) return;
+
+              setState(() => index = ref.read(numOfTodosStateProvider) + 1);
+              node.requestFocus();
+            },
+            icon: const Icon(Icons.add),
+          ),
+        ],
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -89,56 +103,19 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: node.hasFocus
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                InkWell(
-                  onTap: () {
-                    node.unfocus();
-                    setState(() {});
-                  },
-                  child: const Icon(Icons.close),
-                )
-              ],
-            )
-          : null,
-      drawer: MyList(length: index),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(
-              IconData(
-                0xf6e8,
-                fontFamily: CupertinoIcons.iconFont,
-                fontPackage: CupertinoIcons.iconFontPackage,
-              ),
-            ),
-            label: 'list',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              IconData(
-                0xf779,
-                fontFamily: CupertinoIcons.iconFont,
-                fontPackage: CupertinoIcons.iconFontPackage,
-              ),
-            ),
-            label: 'new ToDo',
-          ),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          InkWell(
+            onTap: () {
+              node.unfocus();
+              setState(() {});
+            },
+            child: const Icon(Icons.close),
+          )
         ],
-        onTap: (value) {
-          if (value == 0) {
-            openDrawer();
-          } else {
-            final text = formKey.currentState?.bodyContoller.text;
-            if (text is! String || text.isEmpty) return;
-
-            setState(() => index = ref.read(numOfTodosStateProvider) + 1);
-            node.requestFocus();
-          }
-        },
       ),
+      drawer: const MyList(),
     );
   }
 }

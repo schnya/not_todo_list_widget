@@ -4,13 +4,17 @@ import 'package:not_todo_list_widget/presentation/pages/view.dart';
 import 'package:not_todo_list_widget/utils/utils.dart';
 
 class MyList extends ConsumerWidget {
-  const MyList({super.key, this.length});
-
-  final int? length;
+  const MyList({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     void navigate(int index) {
+      // 遷移がキモい。
+      // Navigator.of(context).replaceRouteBelow<dynamic>(
+      //   anchorRoute: MyList.route(),
+      //   newRoute: MyHomePage.route(index: index),
+      // );
+
       Navigator.of(context).pushAndRemoveUntil<dynamic>(
         MyHomePage.route(index: index),
         (route) => route.isFirst,

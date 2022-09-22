@@ -29,18 +29,17 @@ class MyFormState extends State<MyForm> {
   @override
   void didUpdateWidget(MyForm oldWidget) {
     super.didUpdateWidget(oldWidget);
-    initialValue = preferences.then((prefs) {
+    preferences.then((prefs) {
       final value = prefs.getString('todo_${widget.id}') ?? '';
-      bodyContoller = TextEditingController(text: value);
-      return value;
+      bodyContoller.text = value;
     });
   }
 
-  // @override
-  // void dispose() {
-  //   bodyContoller.dispose();
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    bodyContoller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
