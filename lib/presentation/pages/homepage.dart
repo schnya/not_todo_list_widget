@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:not_todo_list_widget/presentation/widgets/form.dart';
+
+import '../../utils/shared_preferences.dart';
+import '../widgets/form.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -12,9 +14,23 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late final formKey = GlobalObjectKey<MyFormState>(context);
+  int? index;
 
-  void _incrementCounter() {
-    print(formKey.currentState?.bodyContoller.text);
+  Future<void> _incrementCounter() async {
+    final prefs = await preferences;
+    print(prefs.getString('todo_$index'));
+  }
+
+  Future<void> save() async {
+    final prefs = await preferences;
+    final length = index ?? ((prefs.getInt('length') ?? 0) + 1);
+    final text = formKey.currentState?.bodyContoller.text ?? '';
+
+    index ??= length;
+    print(index);
+    await prefs.setInt('length', index!);
+    await prefs.setString('todo_${index!}', text);
+    setState(() {});
   }
 
   @override
@@ -28,12 +44,12 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            MyForm(key: formKey),
+            MyForm(key: formKey, id: index),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: save,
                   child: const Text('Save'),
                 ),
               ],
